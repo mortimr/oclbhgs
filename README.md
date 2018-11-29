@@ -1,4 +1,10 @@
 # COMP426 Assignment 4
+
+![10k1g](./.10k1g.gif)
+
+
+_10K Body simulation, smooth 60FPS on GTX 1060_
+
 ## OpenCL Barnes-Hut Galaxy Simulator
 
 | First Name | Last Name | Student ID |
@@ -179,12 +185,13 @@ The initialisation occurs once.
 
 ```python
 
+# Initialise cells and bodies
 init()
 
 while (running)
 
-    // While lost bodies are present, assign them to according cell
-    // Bodies are then resorted, and cells are relinked to bodies
+    # While lost bodies are present, assign them to according cell
+    # Bodies are then resorted, and cells are relinked to bodies
     while (galaxy_contains_losts())
         galaxy_dispatch_losts()
         body_sort()
@@ -192,10 +199,10 @@ while (running)
         cell_set_idxs()
         cell_set_amount()
 
-    // While sub dispatchables cells are present, dispatch their bodies to children cells
+    # While sub dispatchables cells are present, dispatch their bodies to children cells
     while (galaxy_contains_sub_dispatchables())
-        // Every time a layer is processed, bodies are resorted, cells are relinked to bodies to ensure that next layer
-        // computation is correct
+        # Every time a layer is processed, bodies are resorted, cells are relinked to bodies to ensure that next layer
+        # computation is correct
         for (layer_number in tree)
             galaxy_dispatch_sub_dispatchables(layer_number)
             body_sort()
@@ -203,19 +210,19 @@ while (running)
             cell_set_idxs()
             cell_set_amount()
 
-    // Check for cells to deactivate
+    # Check for cells to deactivate
     galaxy_clear_inactive_cells()
 
-    // Compute centers of masses
+    # Compute centers of masses
     galaxy_compute_com()
 
-    // Compute accelerations
+    # Compute accelerations
     galaxy_compute_accelerations()
 
-    // Apply computation
+    # Apply computation
     body_apply_accelerations()
 
-    // Recover bodies + cells, display
+    # Recover bodies + cells, display
 
 ```
 
