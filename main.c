@@ -21,7 +21,7 @@
 
 #define MAP_WIDTH (2048)
 #define MAP_HEIGHT (2048)
-#define GALAXY_ONE_BODY_COUNT (10001)
+#define GALAXY_ONE_BODY_COUNT (1001)
 #define GALAXY_ONE_THETA_VALUE (0.8)
 #define GALAXY_ONE_G_VALUE (0.00009674)
 #define GALAXY_ONE_MAX_DEPTH (7)
@@ -124,7 +124,7 @@ void loop() {
     glutPostRedisplay();
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
     KEYS.paused = true;
     KEYS.fps = 60.0f;
     ogl_init(&loop, &argc, argv, MAP_WIDTH, MAP_HEIGHT, &KEYS);

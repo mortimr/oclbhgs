@@ -27,18 +27,18 @@
 #define KERNEL_NAME(PATH, NAME) _KERNEL_NAME(PATH, NAME)
 
 const char *kernel_source_files[] = {
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_contains_losts.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_dispatch_losts.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_contains_sub_dispatchables.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_dispatch_sub_dispatchables.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_clear_inactive_cells.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_compute_com.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_compute_accelerations.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_body_sort.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_body_apply_accelerations.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_cell_clear_idxs.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_cell_set_idxs.c),
-        KERNEL_NAME(PATH_TO_KERNEL, /_cell_set_amount.c)
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_contains_losts.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_dispatch_losts.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_contains_sub_dispatchables.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_dispatch_sub_dispatchables.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_clear_inactive_cells.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_compute_com.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_galaxy_compute_accelerations.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_body_sort.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_body_apply_accelerations.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_cell_clear_idxs.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_cell_set_idxs.cl),
+        KERNEL_NAME(PATH_TO_KERNEL, /_cell_set_amount.cl)
 };
 
 const char *kernel_names[] = {
