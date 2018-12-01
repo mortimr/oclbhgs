@@ -21,7 +21,7 @@
 
 #define MAP_WIDTH (2048)
 #define MAP_HEIGHT (2048)
-#define GALAXY_ONE_BODY_COUNT (10001)
+#define GALAXY_ONE_BODY_COUNT (1001)
 #define GALAXY_ONE_THETA_VALUE (0.8)
 #define GALAXY_ONE_G_VALUE (0.00009674)
 #define GALAXY_ONE_MAX_DEPTH (7)
@@ -31,8 +31,11 @@ keys KEYS;
 void loop() {
     static ocl ocl;
     static body *bodies_one = NULL;
+    static body *bodies_two = NULL;
     static cell *cells_one = NULL;
+    static cell *cells_two = NULL;
     static ocl_galaxy *galaxy_one = NULL;
+    static ocl_galaxy *galaxy_two = NULL;
 
     if (!ocl.ctx) {
         ocl_init(&ocl);
@@ -66,8 +69,41 @@ void loop() {
 
     }
 
+    if (!bodies_two) {
+        srand((unsigned int) time(NULL));
+        bodies_two = body_init_set(GALAXY_ONE_BODY_COUNT);
+
+        size_t global_idx = 0;
+
+        for (size_t body_idx = 0; body_idx < GALAXY_ONE_BODY_COUNT - 1; ++body_idx) {
+            float x = rand() % MAP_WIDTH / 4 + MAP_WIDTH / 8 + MAP_WIDTH / 2;
+            float y = rand() % MAP_HEIGHT / 4 + MAP_HEIGHT / 8 + MAP_HEIGHT / 2;
+            float dist = sqrt(pow((float) (x - (MAP_WIDTH / 4 + MAP_WIDTH / 2)), (float) 2) +
+                              pow((float) (y - (MAP_HEIGHT / 4 + MAP_HEIGHT / 2)), (float) 2));
+            if (dist > MAP_WIDTH / 8) {
+                --body_idx;
+                continue ;
+            }
+
+            bodies_two[body_idx].pos.x = x;
+            bodies_two[body_idx].pos.y = y;
+            bodies_two[body_idx].speed.x = 3;
+            bodies_two[body_idx].speed.y = -1;
+            bodies_two[global_idx + body_idx].mass = 0;
+        }
+        bodies_two[GALAXY_ONE_BODY_COUNT - 1].pos.x = MAP_WIDTH / 2;
+        bodies_two[GALAXY_ONE_BODY_COUNT - 1].pos.y = MAP_HEIGHT / 2;
+        bodies_two[GALAXY_ONE_BODY_COUNT - 1].mass = 150000000;
+
+    }
+
     if (!galaxy_one) {
         galaxy_one = galaxy_init(&ocl, &cells_one, GALAXY_ONE_MAX_DEPTH, GALAXY_ONE_THETA_VALUE, GALAXY_ONE_G_VALUE, bodies_one,
+                                 GALAXY_ONE_BODY_COUNT, MAP_WIDTH, MAP_HEIGHT);
+    }
+
+    if (!galaxy_two) {
+        galaxy_two = galaxy_init(&ocl, &cells_two, GALAXY_ONE_MAX_DEPTH, GALAXY_ONE_THETA_VALUE, GALAXY_ONE_G_VALUE, bodies_two,
                                  GALAXY_ONE_BODY_COUNT, MAP_WIDTH, MAP_HEIGHT);
     }
 
@@ -77,10 +113,14 @@ void loop() {
     if (!KEYS.paused) {
         galaxy_resolve(galaxy_one, &ocl);
         galaxy_compute(galaxy_one, &ocl);
+        galaxy_resolve(galaxy_two, &ocl);
+        galaxy_compute(galaxy_two, &ocl);
     }
 
     galaxy_recover_bodies(galaxy_one, &ocl, bodies_one);
     galaxy_recover_cells(galaxy_one, &ocl, cells_one);
+    galaxy_recover_bodies(galaxy_two, &ocl, bodies_two);
+    galaxy_recover_cells(galaxy_two, &ocl, cells_two);
 
     glClear(GL_COLOR_BUFFER_BIT);
     glLineWidth(1);
@@ -89,6 +129,10 @@ void loop() {
     if (KEYS.grid) {
         glColor3f(0, 0.3, 0.3);
         ogl_draw_quadrants(cells_one, galaxy_one->cell_count);
+        glColor3f(0.3, 0.3, 0);
+        ogl_draw_quadrants(cells_two, galaxy_two->cell_count);
+
+
         glColor3f(1, 1, 1);
         glRasterPos2i(5, 5);
 
@@ -106,6 +150,14 @@ void loop() {
     glColor3f(0.6, 0.6, 1);
 
     ogl_draw_bodies(bodies_one, GALAXY_ONE_BODY_COUNT);
+
+    glEnd();
+
+    glBegin(GL_POINTS);
+    glLineWidth(1);
+    glColor3f(1, 0.6, 0.6);
+
+    ogl_draw_bodies(bodies_two, GALAXY_ONE_BODY_COUNT);
 
     glEnd();
 
