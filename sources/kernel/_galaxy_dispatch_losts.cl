@@ -74,34 +74,43 @@ inline long galaxy_pos_to_cell(__global galaxy_infos *infos, __global position *
 __kernel void
 _galaxy_dispatch_losts(__global cell *cells, __global body *bodies, __global galaxy_infos *infos) {
 
+    const unsigned long galaxy_idx = get_global_id(1);
     const unsigned long body_idx = get_global_id(0);
 
-    if (bodies[body_idx].pos.x < 0 || bodies[body_idx].pos.x > infos->map_limits.x || bodies[body_idx].pos.y < 0 ||
-        bodies[body_idx].pos.y > infos->map_limits.y)
-        return;
+    if (body_idx < infos[galaxy_idx].body_count) {
 
-    if (bodies[body_idx].cell_idx == 0) {
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
 
-        long lower_node_idx = galaxy_pos_to_cell(infos, &bodies[body_idx].pos);
-        long tmp_lower_node_idx;
-
-        if (lower_node_idx < 0)
+        if (bodies[body_idx + boffset].pos.x < 0 ||
+            bodies[body_idx + boffset].pos.x > infos[galaxy_idx].map_limits.x ||
+            bodies[body_idx + boffset].pos.y < 0 ||
+            bodies[body_idx + boffset].pos.y > infos[galaxy_idx].map_limits.y)
             return;
 
-        while (lower_node_idx >= 0 && !cells[lower_node_idx].active) {
+        if (bodies[body_idx + boffset].cell_idx == 0) {
 
-            if ((tmp_lower_node_idx = galaxy_up(cells, (unsigned long) lower_node_idx)) == -1) break;
+            long lower_node_idx = galaxy_pos_to_cell(infos + galaxy_idx,
+                                                     &bodies[body_idx + boffset].pos);
+            long tmp_lower_node_idx;
 
-            lower_node_idx = tmp_lower_node_idx;
+            if (lower_node_idx < 0)
+                return;
+
+            while (lower_node_idx >= 0 && !cells[lower_node_idx + coffset].active) {
+
+                if ((tmp_lower_node_idx = galaxy_up(cells + coffset, (unsigned long) lower_node_idx)) == -1) break;
+
+                lower_node_idx = tmp_lower_node_idx;
+
+            }
+
+
+            bodies[body_idx + boffset].cell_idx = (unsigned long) lower_node_idx + 1;
+            if (!cells[lower_node_idx + coffset].active)
+                cells[lower_node_idx + coffset].active = 1;
 
         }
-
-
-        bodies[body_idx].cell_idx = (unsigned long) lower_node_idx + 1;
-        if (!cells[lower_node_idx].active)
-            cells[lower_node_idx].active = 1;
-
     }
-
 }
 

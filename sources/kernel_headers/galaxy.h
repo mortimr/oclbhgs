@@ -19,6 +19,9 @@ typedef struct galaxy_infos {
     float g;
     unsigned long max_local_work_size;
     unsigned long last_layer_idx;
+    unsigned long body_buffer_offset;
+    unsigned long cell_buffer_offset;
+    unsigned long history_buffer_offset;
 } galaxy_infos;
 
 typedef struct galaxy {

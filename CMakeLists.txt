@@ -17,6 +17,7 @@ set(HEADERS
         ./sources/headers/ocl.h
         ./sources/headers/ogl.h
         ./sources/headers/keys.h
+        ./sources/headers/color.h
 
         ./sources/kernel_headers/galaxy.h
         ./sources/kernel_headers/cell.h
@@ -34,6 +35,18 @@ set(SOURCES
         ./sources/logics/ocl.c
         ./sources/logics/ogl.c
 
+        ./sources/kernel/_galaxy_contains_losts.cl
+        ./sources/kernel/_galaxy_dispatch_losts.cl
+        ./sources/kernel/_body_sort.cl
+        ./sources/kernel/_cell_clear_idxs.cl
+        ./sources/kernel/_cell_set_idxs.cl
+        ./sources/kernel/_cell_set_amount.cl
+        ./sources/kernel/_galaxy_contains_sub_dispatchables.cl
+        ./sources/kernel/_galaxy_dispatch_sub_dispatchables.cl
+        ./sources/kernel/_galaxy_clear_inactive_cells.cl
+        ./sources/kernel/_galaxy_compute_com.cl
+        ./sources/kernel/_galaxy_compute_accelerations.cl
+        ./sources/kernel/_body_apply_accelerations.cl
         )
 
 add_compile_definitions(OPENCL_HOST=true)

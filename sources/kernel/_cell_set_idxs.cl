@@ -11,20 +11,27 @@
 #include "../sources/kernel_headers/galaxy.h"
 
 __kernel void
-_cell_set_idxs(__global body *bodies, __global cell *cells) {
+_cell_set_idxs(__global body *bodies, __global cell *cells, __global galaxy_infos *infos) {
 
     unsigned long idx = get_global_id(0);
+    unsigned long galaxy_idx = get_global_id(1);
 
-    if (idx == 0 && bodies[idx].cell_idx != 0) {
+    if (idx < infos[galaxy_idx].body_count - 1) {
 
-        cells[bodies[idx].cell_idx - 1].body_idx = idx + 1;
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
+        
+        if (idx == 0 && bodies[idx + boffset].cell_idx != 0) {
 
-    }
+            cells[bodies[idx + boffset].cell_idx - 1 + coffset].body_idx = idx + 1;
 
-    if (bodies[idx + 1].cell_idx != bodies[idx].cell_idx) {
+        }
 
-        cells[bodies[idx + 1].cell_idx - 1].body_idx = idx + 2;
+        if (bodies[idx + 1 + boffset].cell_idx != bodies[idx + boffset].cell_idx) {
 
+            cells[bodies[idx + 1 + boffset].cell_idx - 1 + coffset].body_idx = idx + 2;
+
+        }
     }
 
 }

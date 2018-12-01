@@ -11,20 +11,26 @@
 #include "../sources/kernel_headers/galaxy.h"
 
 __kernel void
-_cell_clear_idxs(__global cell *cells) {
+_cell_clear_idxs(__global cell *cells, __global galaxy_infos *infos) {
 
     unsigned int idx = get_global_id(0);
+    unsigned int galaxy_idx = get_global_id(1);
 
-    if (cells[idx].body_idx != 0) {
+    if (idx < infos[galaxy_idx].cell_count) {
 
-        cells[idx].body_idx = 0;
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
 
-    }
+        if (cells[idx + coffset].body_idx != 0) {
 
-    if (cells[idx].body_count != 0) {
+            cells[idx + coffset].body_idx = 0;
 
-        cells[idx].body_count = 0;
+        }
 
+        if (cells[idx + coffset].body_count != 0) {
+
+            cells[idx + coffset].body_count = 0;
+
+        }
     }
 
 }

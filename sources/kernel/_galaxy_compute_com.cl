@@ -26,65 +26,84 @@ _galaxy_compute_com(__global cell *cells, __global body *bodies, __global galaxy
                     const unsigned long *start_idx) {
 
     const unsigned long idx = *start_idx + get_global_id(0);
+    const unsigned long galaxy_idx = get_global_id(1);
 
-    if (cells[idx].active) {
+    if (idx < infos[galaxy_idx].cell_count) {
 
-        if (cells[idx].body_count == 0) {
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
+        
+        if (cells[idx + coffset].active) {
 
-            long children_cells = galaxy_down(infos, cells, idx);
+            if (cells[idx + coffset].body_count == 0) {
 
-            if (children_cells == -1 && cells[idx].body_count == 0) {
+                long children_cells = galaxy_down(infos + galaxy_idx, cells + coffset,
+                                                  idx);
 
-                cells[idx].com.pos.x = 0;
-                cells[idx].com.pos.y = 0;
-                cells[idx].com.mass = 0;
-                return;
+                if (children_cells == -1 && cells[idx + coffset].body_count == 0) {
 
-            }
-
-            float total_mass = 0;
-
-            for (unsigned int children_idx = 0; children_idx < 4; ++children_idx) {
-
-                if (cells[children_cells + children_idx].active) {
-
-                    cells[idx].com.pos.x += cells[children_cells + children_idx].com.pos.x *
-                                            cells[children_cells + children_idx].com.mass;
-                    cells[idx].com.pos.y += cells[children_cells + children_idx].com.pos.y *
-                                            cells[children_cells + children_idx].com.mass;
-                    total_mass += cells[children_cells + children_idx].com.mass;
+                    cells[idx + coffset].com.pos.x = 0;
+                    cells[idx + coffset].com.pos.y = 0;
+                    cells[idx + coffset].com.mass = 0;
+                    return;
 
                 }
 
-            }
+                float total_mass = 0;
 
-            if (total_mass) {
+                for (unsigned int children_idx = 0; children_idx < 4; ++children_idx) {
 
-                cells[idx].com.pos.x /= total_mass;
-                cells[idx].com.pos.y /= total_mass;
-                cells[idx].com.mass = total_mass;
+                    if (cells[children_cells + children_idx + coffset].active) {
 
-            }
+                        cells[idx + coffset].com.pos.x +=
+                                cells[children_cells + children_idx + coffset].com.pos.x *
+                                cells[children_cells + children_idx + coffset].com.mass;
+                        cells[idx + coffset].com.pos.y +=
+                                cells[children_cells + children_idx + coffset].com.pos.y *
+                                cells[children_cells + children_idx + coffset].com.mass;
+                        total_mass += cells[children_cells + children_idx +
+                                            coffset].com.mass;
 
-        } else {
+                    }
 
-            float total_mass = 0;
+                }
 
-            for (unsigned int body_idx = 0; body_idx < cells[idx].body_count; ++body_idx) {
+                if (total_mass) {
 
-                cells[idx].com.pos.x += bodies[cells[idx].body_idx - 1 + body_idx].pos.x *
-                                        bodies[cells[idx].body_idx - 1 + body_idx].mass;
-                cells[idx].com.pos.y += bodies[cells[idx].body_idx - 1 + body_idx].pos.y *
-                                        bodies[cells[idx].body_idx - 1 + body_idx].mass;
-                total_mass += bodies[cells[idx].body_idx - 1 + body_idx].mass;
+                    cells[idx + coffset].com.pos.x /= total_mass;
+                    cells[idx + coffset].com.pos.y /= total_mass;
+                    cells[idx + coffset].com.mass = total_mass;
 
-            }
+                }
 
-            if (total_mass) {
+            } else {
 
-                cells[idx].com.pos.x /= total_mass;
-                cells[idx].com.pos.y /= total_mass;
-                cells[idx].com.mass = total_mass;
+                float total_mass = 0;
+
+                for (unsigned int body_idx = 0;
+                     body_idx < cells[idx + coffset].body_count; ++body_idx) {
+
+                    cells[idx + coffset].com.pos.x +=
+                            bodies[cells[idx + coffset].body_idx - 1 + body_idx +
+                                   boffset].pos.x *
+                            bodies[cells[idx + coffset].body_idx - 1 + body_idx +
+                                   boffset].mass;
+                    cells[idx + coffset].com.pos.y +=
+                            bodies[cells[idx + coffset].body_idx - 1 + body_idx +
+                                   boffset].pos.y *
+                            bodies[cells[idx + coffset].body_idx - 1 + body_idx +
+                                   boffset].mass;
+                    total_mass += bodies[cells[idx + coffset].body_idx - 1 + body_idx + boffset].mass;
+
+                }
+
+                if (total_mass) {
+
+                    cells[idx + coffset].com.pos.x /= total_mass;
+                    cells[idx + coffset].com.pos.y /= total_mass;
+                    cells[idx + coffset].com.mass = total_mass;
+
+                }
 
             }
 

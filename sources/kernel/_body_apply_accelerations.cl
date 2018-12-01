@@ -11,23 +11,47 @@
 #include "../sources/kernel_headers/galaxy.h"
 
 __kernel void
-_body_apply_accelerations(__global body *bodies, __global cell *cells) {
+_body_apply_accelerations(__global body *bodies, __global cell *cells, __global galaxy_infos *infos) {
 
     unsigned int body_idx = get_global_id(0);
+    unsigned int galaxy_idx = get_global_id(1);
 
-    bodies[body_idx].speed.x += bodies[body_idx].cache.x;
-    bodies[body_idx].speed.y += bodies[body_idx].cache.y;
-    bodies[body_idx].pos.x += bodies[body_idx].speed.x;
-    bodies[body_idx].pos.y += bodies[body_idx].speed.y;
-    bodies[body_idx].cache.x = 0;
-    bodies[body_idx].cache.y = 0;
+    if (body_idx < infos[galaxy_idx].body_count) {
 
-    if ((bodies[body_idx].pos.x > cells[bodies[body_idx].cell_idx - 1].pos.x + cells[bodies[body_idx].cell_idx - 1].size.x)
-        || (bodies[body_idx].pos.y > cells[bodies[body_idx].cell_idx - 1].pos.y + cells[bodies[body_idx].cell_idx - 1].size.y)
-        || (bodies[body_idx].pos.x < cells[bodies[body_idx].cell_idx - 1].pos.x)
-        || (bodies[body_idx].pos.y < cells[bodies[body_idx].cell_idx - 1].pos.y)) {
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
 
-        bodies[body_idx].cell_idx = 0;
+        bodies[body_idx + boffset].speed.x += bodies[body_idx +
+                                                     boffset].cache.x;
+        bodies[body_idx + boffset].speed.y += bodies[body_idx +
+                                                     boffset].cache.y;
+        bodies[body_idx + boffset].pos.x += bodies[body_idx +
+                                                   boffset].speed.x;
+        bodies[body_idx + boffset].pos.y += bodies[body_idx +
+                                                   boffset].speed.y;
+        bodies[body_idx + boffset].cache.x = 0;
+        bodies[body_idx + boffset].cache.y = 0;
+
+        if ((bodies[body_idx + boffset].pos.x >
+             cells[bodies[body_idx + boffset].cell_idx - 1 +
+                   coffset].pos.x +
+             cells[bodies[body_idx + boffset].cell_idx - 1 +
+                   coffset].size.x)
+            || (bodies[body_idx + boffset].pos.y >
+                cells[bodies[body_idx + boffset].cell_idx - 1 +
+                      coffset].pos.y +
+                cells[bodies[body_idx + boffset].cell_idx - 1 +
+                      coffset].size.y)
+            || (bodies[body_idx + boffset].pos.x <
+                cells[bodies[body_idx + boffset].cell_idx - 1 +
+                      coffset].pos.x)
+            || (bodies[body_idx + boffset].pos.y <
+                cells[bodies[body_idx + boffset].cell_idx - 1 +
+                      coffset].pos.y)) {
+
+            bodies[body_idx + boffset].cell_idx = 0;
+
+        }
 
     }
 }

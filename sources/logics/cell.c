@@ -6,6 +6,11 @@
 
 void cell_clear_idxs(ocl_galaxy *galaxy, ocl *ocl) {
 
+    unsigned long dimensions[] = {
+            galaxy->highest_cell_count,
+            galaxy->galaxy_count
+    };
+
     ocl->err = clSetKernelArg(ocl->kernel[KERNEL_CELL_CLEAR_IDXS], 0, sizeof(cl_mem), &galaxy->cells);
     if (ocl->err) {
 
@@ -14,7 +19,15 @@ void cell_clear_idxs(ocl_galaxy *galaxy, ocl *ocl) {
 
     }
 
-    ocl->err = clEnqueueNDRangeKernel(ocl->queue, ocl->kernel[KERNEL_CELL_CLEAR_IDXS], 1, NULL, &galaxy->cell_count,
+    ocl->err = clSetKernelArg(ocl->kernel[KERNEL_CELL_CLEAR_IDXS], 1, sizeof(cl_mem), &galaxy->infos);
+    if (ocl->err) {
+
+        dprintf(STDERR_FILENO, "clear_idxs %d: Unable to set argument 1 for kernel call\n", ocl->err);
+        exit(ocl->err);
+
+    }
+
+    ocl->err = clEnqueueNDRangeKernel(ocl->queue, ocl->kernel[KERNEL_CELL_CLEAR_IDXS], 2, NULL, dimensions,
                                       NULL, 0, NULL, NULL);
     if (ocl->err) {
 
@@ -35,7 +48,10 @@ void cell_clear_idxs(ocl_galaxy *galaxy, ocl *ocl) {
 
 void cell_set_idxs(ocl_galaxy *galaxy, ocl *ocl) {
 
-    unsigned long body_count = galaxy->body_count - 1;
+    unsigned long dimensions[] = {
+            galaxy->highest_body_count - 1,
+            galaxy->galaxy_count
+    };
 
     ocl->err = clSetKernelArg(ocl->kernel[KERNEL_CELL_SET_IDXS], 0, sizeof(cl_mem), &galaxy->bodies);
     if (ocl->err) {
@@ -53,7 +69,15 @@ void cell_set_idxs(ocl_galaxy *galaxy, ocl *ocl) {
 
     }
 
-    ocl->err = clEnqueueNDRangeKernel(ocl->queue, ocl->kernel[KERNEL_CELL_SET_IDXS], 1, NULL, &body_count, NULL, 0,
+    ocl->err = clSetKernelArg(ocl->kernel[KERNEL_CELL_SET_IDXS], 2, sizeof(cl_mem), &galaxy->infos);
+    if (ocl->err) {
+
+        dprintf(STDERR_FILENO, "set_idxs %d: Unable to set argument 2 for kernel call\n", ocl->err);
+        exit(ocl->err);
+
+    }
+
+    ocl->err = clEnqueueNDRangeKernel(ocl->queue, ocl->kernel[KERNEL_CELL_SET_IDXS], 2, NULL, dimensions, NULL, 0,
                                       NULL, NULL);
     if (ocl->err) {
 
@@ -74,7 +98,10 @@ void cell_set_idxs(ocl_galaxy *galaxy, ocl *ocl) {
 
 void cell_set_amount(ocl_galaxy *galaxy, ocl *ocl) {
 
-    unsigned long body_count = galaxy->body_count - 1;
+    unsigned long dimensions[] = {
+            galaxy->highest_body_count - 1,
+            galaxy->galaxy_count
+    };
 
     ocl->err = clSetKernelArg(ocl->kernel[KERNEL_CELL_SET_AMOUNT], 0, sizeof(cl_mem), &galaxy->bodies);
     if (ocl->err) {
@@ -100,7 +127,7 @@ void cell_set_amount(ocl_galaxy *galaxy, ocl *ocl) {
 
     }
 
-    ocl->err = clEnqueueNDRangeKernel(ocl->queue, ocl->kernel[KERNEL_CELL_SET_AMOUNT], 1, NULL, &body_count, NULL, 0,
+    ocl->err = clEnqueueNDRangeKernel(ocl->queue, ocl->kernel[KERNEL_CELL_SET_AMOUNT], 2, NULL, dimensions, NULL, 0,
                                       NULL, NULL);
     if (ocl->err) {
 

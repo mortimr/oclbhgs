@@ -13,16 +13,21 @@
 __kernel void
 _galaxy_contains_losts(__global body *bodies, __global galaxy_infos *infos, __global unsigned long *found) {
 
-    if (*found == 0) {
+    const unsigned long galaxy_idx = get_global_id(1);
+    const unsigned long idx = get_global_id(0);
 
-        const unsigned long idx = get_global_id(0);
+    if (idx < infos[galaxy_idx].body_count && found[galaxy_idx] == 0) {
 
-        if (bodies[idx].pos.x < 0 || bodies[idx].pos.x > infos->map_limits.x || bodies[idx].pos.y < 0 ||
-            bodies[idx].pos.y > infos->map_limits.y)
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
+
+        if (bodies[idx + boffset].pos.x < 0 ||
+            bodies[idx + boffset].pos.x > infos[galaxy_idx].map_limits.x ||
+            bodies[idx + boffset].pos.y < 0 ||
+            bodies[idx + boffset].pos.y > infos[galaxy_idx].map_limits.y)
             return;
 
-        if (bodies[idx].cell_idx == 0)
-            *found = 1;
+        if (bodies[idx + boffset].cell_idx == 0)
+            found[galaxy_idx] = 1;
 
     }
 

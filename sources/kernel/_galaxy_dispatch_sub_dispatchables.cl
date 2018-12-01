@@ -27,36 +27,43 @@ __kernel void
 _galaxy_dispatch_sub_dispatchables(__global cell *cells, __global body *bodies, __global galaxy_infos *infos, __global
                                    const unsigned long *start_idx) {
 
+    unsigned long galaxy_idx = get_global_id(1);
     unsigned long current = *start_idx + get_global_id(0);
 
-    if (cells[current].active) {
+    if (current < infos[galaxy_idx].cell_count) {
 
-        if (cells[current].body_count > 1) {
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
 
-            unsigned long children_cells_idx = (unsigned long) galaxy_down(infos, cells, current);
-            unsigned long chosen_children_cell_idx;
+        if (cells[current + coffset].active) {
 
-            for (unsigned long body_idx = 0; body_idx < cells[current].body_count; ++body_idx) {
+            if (cells[current + coffset].body_count > 1) {
 
-                chosen_children_cell_idx = 0;
-                if ((bodies[body_idx + cells[current].body_idx - 1].pos.x -
-                     cells[current].pos.x) / (cells[current].size.x / 2.0) >= 1.0)
-                    ++chosen_children_cell_idx;
+                unsigned long children_cells_idx = (unsigned long) galaxy_down(infos + galaxy_idx, cells + coffset, current);
+                unsigned long chosen_children_cell_idx;
 
-                if ((bodies[body_idx + cells[current].body_idx - 1].pos.y -
-                     cells[current].pos.y) / (cells[current].size.y / 2.0) >= 1.0)
-                    chosen_children_cell_idx += 2;
+                for (unsigned long body_idx = 0; body_idx < cells[current + coffset].body_count; ++body_idx) {
 
-                bodies[body_idx + cells[current].body_idx - 1].cell_idx =
-                        (children_cells_idx + chosen_children_cell_idx) + 1;
+                    chosen_children_cell_idx = 0;
+                    if ((bodies[body_idx + cells[current + coffset].body_idx - 1 + boffset].pos.x -
+                         cells[current + coffset].pos.x) / (cells[current + coffset].size.x / 2.0) >= 1.0)
+                        ++chosen_children_cell_idx;
 
-                if (!cells[children_cells_idx + chosen_children_cell_idx].active)
-                    cells[children_cells_idx + chosen_children_cell_idx].active = 1;
+                    if ((bodies[body_idx + cells[current + coffset].body_idx - 1 + boffset].pos.y -
+                         cells[current + coffset].pos.y) / (cells[current + coffset].size.y / 2.0) >= 1.0)
+                        chosen_children_cell_idx += 2;
+
+                    bodies[body_idx + cells[current + coffset].body_idx - 1 + boffset].cell_idx =
+                            (children_cells_idx + chosen_children_cell_idx) + 1;
+
+                    if (!cells[children_cells_idx + chosen_children_cell_idx + coffset].active)
+                        cells[children_cells_idx + chosen_children_cell_idx + coffset].active = 1;
+
+                }
 
             }
 
         }
-
     }
 
 }

@@ -26,21 +26,31 @@ _galaxy_clear_inactive_cells(__global cell *cells, __global galaxy_infos *infos,
                              const unsigned long *start_idx) {
 
     const unsigned long idx = *start_idx + get_global_id(0);
-    long children_cells = galaxy_down(infos, cells, idx);
+    const unsigned long galaxy_idx = get_global_id(1);
 
-    if (children_cells == -1 && cells[idx].body_count == 0) {
+    if (idx < infos[galaxy_idx].cell_count) {
 
-        cells[idx].active = 0;
-        return;
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
 
-    }
+        long children_cells = galaxy_down(infos + galaxy_idx, cells + coffset, idx);
 
-    if (cells[idx].body_count == 0) {
+        if (children_cells == -1 && cells[idx + coffset].body_count == 0) {
 
-        if (!cells[children_cells].active && !cells[children_cells + 1].active && !cells[children_cells + 2].active &&
-            !cells[children_cells + 3].active) {
+            cells[idx + coffset].active = 0;
+            return;
 
-            cells[idx].active = 0;
+        }
+
+        if (cells[idx + coffset].body_count == 0) {
+
+            if (!cells[children_cells + coffset].active &&
+                !cells[children_cells + 1 + coffset].active &&
+                !cells[children_cells + 2 + coffset].active &&
+                !cells[children_cells + 3 + coffset].active) {
+
+                cells[idx + coffset].active = 0;
+
+            }
 
         }
 

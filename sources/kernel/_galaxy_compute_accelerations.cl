@@ -35,36 +35,53 @@ _galaxy_compute_accelerations(__global cell *cells, __global body *bodies, __glo
 
     const unsigned long body_idx = get_global_id(0);
     const unsigned long cell_idx = *start_idx + get_global_id(1);
+    const unsigned long galaxy_idx = get_global_id(2);
 
-    if (cells[cell_idx].active) {
+    if (body_idx < infos[galaxy_idx].body_count && cell_idx < infos[galaxy_idx].cell_count) {
 
-        long up_node = galaxy_up(cells, cell_idx);
-        if (up_node >= 0 && compute_history[body_idx * infos->cell_count + up_node] != 0) {
+        unsigned long coffset = infos[galaxy_idx].cell_buffer_offset;
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
 
-            compute_history[body_idx * infos->cell_count + cell_idx] = 1;
-            return;
+        if (cells[cell_idx + coffset].active) {
+
+            long up_node = galaxy_up(cells + coffset, cell_idx);
+            if (up_node >= 0 && compute_history[body_idx * infos[galaxy_idx].cell_count + up_node +
+                                                infos[galaxy_idx].history_buffer_offset] != 0) {
+
+                compute_history[body_idx * infos[galaxy_idx].cell_count + cell_idx +
+                                infos[galaxy_idx].history_buffer_offset] = 1;
+                return;
+
+            }
+
+            float dist = sqrt(pow((float) (bodies[body_idx + boffset].pos.x -
+                                           cells[cell_idx +
+                                                 coffset].com.pos.x), (float) 2) +
+                                 pow((float) (bodies[body_idx + boffset].pos.y -
+                                              cells[cell_idx +
+                                                    coffset].com.pos.y), (float) 2));
+
+            if (cells[cell_idx + coffset].body_count ||
+                (cells[cell_idx + coffset].size.x / dist < infos[galaxy_idx].theta)) {
+
+                float k = infos[galaxy_idx].g * cells[cell_idx + coffset].com.mass /
+                          (pow((float) (dist + 3), (float) 3));
+                float x_dir = k * (cells[cell_idx + coffset].com.pos.x -
+                                   bodies[body_idx + boffset].pos.x);
+                float y_dir = k * (cells[cell_idx + coffset].com.pos.y -
+                                   bodies[body_idx + boffset].pos.y);
+
+                if (!isnan(x_dir))
+                    bodies[body_idx + boffset].cache.x += x_dir;
+
+                if (!isnan(y_dir))
+                    bodies[body_idx + boffset].cache.y += y_dir;
+
+                compute_history[body_idx * infos->cell_count + cell_idx + infos[galaxy_idx].history_buffer_offset] = 1;
+
+            }
 
         }
-
-        float dist = sqrt(pow((float) (bodies[body_idx].pos.x - cells[cell_idx].com.pos.x), (float) 2) +
-                             pow((float) (bodies[body_idx].pos.y - cells[cell_idx].com.pos.y), (float) 2));
-
-        if (cells[cell_idx].body_count || (cells[cell_idx].size.x / dist < infos->theta)) {
-
-            float k = infos->g * cells[cell_idx].com.mass / (pow((float) (dist + 3), (float) 3));
-            float x_dir = k * (cells[cell_idx].com.pos.x - bodies[body_idx].pos.x);
-            float y_dir = k * (cells[cell_idx].com.pos.y - bodies[body_idx].pos.y);
-
-            if (!isnan(x_dir))
-                bodies[body_idx].cache.x += x_dir;
-
-            if (!isnan(y_dir))
-                bodies[body_idx].cache.y += y_dir;
-
-            compute_history[body_idx * infos->cell_count + cell_idx] = 1;
-
-        }
-
     }
 
 }

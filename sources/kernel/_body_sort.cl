@@ -13,29 +13,36 @@
 __kernel void
 _body_sort(__global body *bodies, __global body *sorted_bodies, __global galaxy_infos *infos) {
 
+    unsigned long galaxy_idx = get_global_id(1);
     unsigned long idx = get_global_id(0);
-    unsigned long new_pos = 0;
-    body body_copy = bodies[idx];
 
-    for (unsigned long search_idx = 0; search_idx < infos->body_count; ++search_idx) {
+    if (idx < infos[galaxy_idx].body_count) {
 
-        if (search_idx != idx) {
+        unsigned long boffset = infos[galaxy_idx].body_buffer_offset;
 
-            if (bodies[search_idx].cell_idx < body_copy.cell_idx) {
+        unsigned long new_pos = 0;
+        body body_copy = bodies[idx + boffset];
 
-                ++new_pos;
+        for (unsigned long search_idx = 0; search_idx < infos[galaxy_idx].body_count; ++search_idx) {
 
-            } else if (bodies[search_idx].cell_idx == body_copy.cell_idx && search_idx < idx) {
+            if (search_idx != idx) {
 
-                ++new_pos;
+                if (bodies[search_idx + boffset].cell_idx < body_copy.cell_idx) {
+
+                    ++new_pos;
+
+                } else if (bodies[search_idx + boffset].cell_idx == body_copy.cell_idx && search_idx < idx) {
+
+                    ++new_pos;
+
+                }
 
             }
 
         }
 
+        sorted_bodies[new_pos + boffset] = body_copy;
     }
-
-    sorted_bodies[new_pos] = body_copy;
 
 }
 
