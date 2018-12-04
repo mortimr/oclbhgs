@@ -21,7 +21,7 @@
 
 #define MAP_WIDTH (2048)
 #define MAP_HEIGHT (2048)
-#define GALAXY_ONE_BODY_COUNT (10001)
+#define GALAXY_ONE_BODY_COUNT (10000)
 #define GALAXY_ONE_THETA_VALUE (0.8)
 #define GALAXY_ONE_G_VALUE (0.00009674)
 #define GALAXY_ONE_MAX_DEPTH (7)
@@ -45,25 +45,19 @@ void loop() {
         size_t global_idx = 0;
 
         for (size_t body_idx = 0; body_idx < GALAXY_ONE_BODY_COUNT - 1; ++body_idx) {
-            float x = rand() % MAP_WIDTH / 4 + MAP_WIDTH / 8;
-            float y = rand() % MAP_HEIGHT / 4 + MAP_HEIGHT / 8;
-            float dist = sqrt(pow((float) (x - MAP_WIDTH / 4), (float) 2) +
-                              pow((float) (y - MAP_HEIGHT / 4), (float) 2));
-            if (dist > MAP_WIDTH / 8) {
+            float x = rand() % MAP_WIDTH;
+            float y = rand() % MAP_HEIGHT;
+            float dist = sqrt(pow((float) (x - MAP_WIDTH / 2), (float) 2) +
+                              pow((float) (y - MAP_HEIGHT / 2), (float) 2));
+            if (dist > MAP_WIDTH / 2) {
                 --body_idx;
                 continue ;
             }
 
             bodies_one[body_idx].pos.x = x;
             bodies_one[body_idx].pos.y = y;
-            bodies_one[body_idx].speed.x = 3;
-            bodies_one[body_idx].speed.y = -1;
-            bodies_one[global_idx + body_idx].mass = 0;
+            bodies_one[global_idx + body_idx].mass = rand() % 100000;
         }
-        bodies_one[GALAXY_ONE_BODY_COUNT - 1].pos.x = MAP_WIDTH / 2;
-        bodies_one[GALAXY_ONE_BODY_COUNT - 1].pos.y = MAP_HEIGHT / 2;
-        bodies_one[GALAXY_ONE_BODY_COUNT - 1].mass = 150000000;
-
     }
 
     if (!galaxy_one) {
