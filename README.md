@@ -1,9 +1,31 @@
 # COMP426 Assignment 4
 
+### 10K Body simulations examples, smooth 60FPS on GTX 1060
+
+`git checkout v1.0` to see this simulation
+
 ![10k1g](./.10k1g.gif)
 
 
-_10K Body simulation, smooth 60FPS on GTX 1060_
+`git checkout v1.1` to see this simulation
+
+![10k2g](./.10k2g.gif)
+
+`git checkout v1.2` to see this simulation
+
+![10k1grandom](./.10k1grandom.gif)
+
+## Running
+
+Requires `gcc`, `cmake`, `OpenCL`, `OpenGL` and `GLUT` to run.
+
+```
+mkdir build
+cd build
+cmake ..
+make
+./oclbhgs
+```
 
 ## OpenCL Barnes-Hut Galaxy Simulator
 
