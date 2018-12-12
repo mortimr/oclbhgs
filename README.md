@@ -2,6 +2,8 @@
 
 ### 10K Body simulations examples, smooth 60FPS on GTX 1060
 
+(Wait for gifs to properly load to see the simulations smoothly)
+
 `git checkout v1.0` to see this simulation
 
 ![10k1g](./.10k1g.gif)
